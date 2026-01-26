@@ -1,0 +1,12 @@
+
+avr-decompiler-data/data/intermediate_s/
+avr-decompiler-data/data/raw_c/
+avr-decompiler-data/sources/
+
+venv/
+avr-decompiler-data/venv/
+__pycache__/
+*.pyc
+
+# Ignore system files
+.DS_Store
