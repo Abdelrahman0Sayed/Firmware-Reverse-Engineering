@@ -1,0 +1,24 @@
+{
+  "name": "ghidra-decompiler",
+  "version": "1.0.0",
+  "description": "Desktop app to convert assembly code to C using GhidraMCP",
+  "main": "main-simple.cjs",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev"
+  },
+  "keywords": [
+    "ghidra",
+    "decompiler",
+    "assembly",
+    "mcp"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0"
+  }
+}

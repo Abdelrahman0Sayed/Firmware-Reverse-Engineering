@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ghidra Decompiler</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <h1>🔧 Ghidra Assembly Decompiler</h1>
+      <div class="connection-status">
+        <span id="status-indicator" class="status-dot disconnected"></span>
+        <span id="status-text">Disconnected</span>
+      </div>
+    </header>
+
+    <!-- Configuration Panel -->
+    <div class="config-panel">
+      <div class="config-section">
+        <h3>MCP Server Configuration</h3>
+        <div class="config-row">
+          <div class="input-group">
+            <label for="mcp-command">Server URL:</label>
+            <input type="text" id="mcp-command" placeholder="http://127.0.0.1:8081/sse" value="http://127.0.0.1:8081/sse">
+          </div>
+          <button id="connect-btn" class="btn btn-primary">Connect</button>
+          <button id="disconnect-btn" class="btn btn-secondary" disabled>Disconnect</button>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h3>Decompilation Settings</h3>
+        <div class="config-row">
+          <div class="input-group">
+            <label for="architecture">Architecture:</label>
+            <select id="architecture">
+              <option value="x86:LE:64:default">x86-64 (Little Endian)</option>
+              <option value="x86:LE:32:default">x86-32 (Little Endian)</option>
+              <option value="ARM:LE:64:v8A">ARM64 (Little Endian)</option>
+              <option value="ARM:LE:32:v7">ARM32 v7 (Little Endian)</option>
+              <option value="MIPS:BE:64:default">MIPS64 (Big Endian)</option>
+              <option value="MIPS:LE:32:default">MIPS32 (Little Endian)</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="base-address">Base Address:</label>
+            <input type="text" id="base-address" placeholder="0x100000" value="0x100000">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Assembly Input -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Assembly Code</h2>
+          <div class="panel-actions">
+            <button id="clear-input-btn" class="btn btn-small">Clear</button>
+            <button id="load-file-btn" class="btn btn-small">Load File</button>
+            <button id="tools-btn" class="btn btn-small" disabled>Tools</button>
+          </div>
+        </div>
+        <textarea 
+          id="assembly-input" 
+          placeholder="Enter assembly code here...&#10;&#10;Example:&#10;push rbp&#10;mov rbp, rsp&#10;mov DWORD PTR [rbp-4], edi&#10;mov eax, DWORD PTR [rbp-4]&#10;add eax, eax&#10;pop rbp&#10;ret"
+        ></textarea>
+        <div class="panel-footer">
+          <button id="decompile-btn" class="btn btn-primary btn-large" disabled>
+            Decompile to C
+          </button>
+        </div>
+      </div>
+
+      <!-- C Code Output -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Decompiled C Code</h2>
+          <div class="panel-actions">
+            <button id="copy-output-btn" class="btn btn-small" disabled>Copy</button>
+            <button id="save-output-btn" class="btn btn-small" disabled>Save</button>
+          </div>
+        </div>
+        <div id="output-container">
+          <pre id="c-output" class="code-output">Decompiled C code will appear here...</pre>
+        </div>
+        <div id="metadata-display" class="metadata hidden"></div>
+      </div>
+    </div>
+
+    <!-- Status/Error Messages -->
+    <div id="message-bar" class="message-bar hidden">
+      <span id="message-text"></span>
+      <button id="close-message" class="close-btn">&times;</button>
+    </div>
+
+    <!-- Function Selection Dialog -->
+    <div id="function-dialog" class="dialog-overlay hidden">
+      <div class="dialog-box">
+        <h3>Select a Function</h3>
+        <input type="text" id="function-search" placeholder="Search functions...">
+        <div id="function-list" class="function-list"></div>
+        <div class="dialog-actions">
+          <button id="cancel-function" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tools Dialog -->
+    <div id="tools-dialog" class="dialog-overlay hidden">
+      <div class="dialog-box tools-dialog">
+        <h3>Ghidra Tools</h3>
+        <div class="tools-grid">
+          <div class="tool-section">
+            <h4>Rename</h4>
+            <button id="tool-rename-func" class="btn btn-tool">Rename Function</button>
+            <button id="tool-rename-var" class="btn btn-tool">Rename Variable</button>
+            <button id="tool-rename-data" class="btn btn-tool">Rename Data</button>
+          </div>
+          <div class="tool-section">
+            <h4>Comments</h4>
+            <button id="tool-add-decomp-comment" class="btn btn-tool">Add Decompiler Comment</button>
+            <button id="tool-add-disasm-comment" class="btn btn-tool">Add Disassembly Comment</button>
+          </div>
+          <div class="tool-section">
+            <h4>Types</h4>
+            <button id="tool-set-prototype" class="btn btn-tool">Set Function Prototype</button>
+            <button id="tool-set-var-type" class="btn btn-tool">Set Variable Type</button>
+          </div>
+          <div class="tool-section">
+            <h4>Search & Navigate</h4>
+            <button id="tool-search-funcs" class="btn btn-tool">Search Functions</button>
+            <button id="tool-xrefs-to" class="btn btn-tool">References To</button>
+            <button id="tool-xrefs-from" class="btn btn-tool">References From</button>
+          </div>
+        </div>
+        <div class="dialog-actions">
+          <button id="close-tools" class="btn btn-secondary">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
